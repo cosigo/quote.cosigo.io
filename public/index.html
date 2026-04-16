@@ -237,6 +237,17 @@
       word-break: break-word;
     }
 
+    .stat-note {
+      margin-top: 6px;
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.025);
+      color: #cbd3de;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -504,22 +515,62 @@
               <div class="stat-label">reference basis</div>
               <div class="stat-value" id="refBasis">$0.0100</div>
             </div>
+
             <div class="stat">
               <div class="stat-label">official buy basis</div>
               <div class="stat-value" id="buyBasis">$0.0105</div>
             </div>
+
             <div class="stat">
               <div class="stat-label">official sell basis</div>
               <div class="stat-value" id="sellBasis">$0.0090</div>
             </div>
+
             <div class="stat">
               <div class="stat-label">quoted inventory</div>
               <div class="stat-value" id="inventoryCigo">210,000 CIGO</div>
             </div>
+
+            <div class="stat">
+              <div class="stat-label">total issuance</div>
+              <div class="stat-value" id="totalIssuance">21,000,000 CIGO</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-label">owner wallet balance</div>
+              <div class="stat-value" id="ownerWalletBalance">15,550,000 CIGO</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-label">distributed outside owner</div>
+              <div class="stat-value" id="distributedSupply">5,450,000 CIGO</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-label">quoted share of issuance</div>
+              <div class="stat-value" id="quotedSharePct">1.0%</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-label">owner-held share</div>
+              <div class="stat-value" id="ownerSharePct">74.05%</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-label">distributed share</div>
+              <div class="stat-value" id="distributedSharePct">25.95%</div>
+            </div>
+
+            <div class="stat-note" id="supplyNote">
+              210,000 CIGO currently used for public quoting, equal to 1.0% of total issuance.
+              This is shown as quoted inventory, not a claim of deep two-way market liquidity.
+            </div>
+
             <div class="stat">
               <div class="stat-label">depth factor</div>
               <div class="stat-value" id="depthFactor">0.25</div>
             </div>
+
             <div class="stat">
               <div class="stat-label">pricing version</div>
               <div class="stat-value" id="pricingVersion">1</div>
@@ -596,8 +647,8 @@
             <code id="formulaText">
 mid = basePrice
 
-buyBasis = mid × (1 + buySpread)
-sellBasis = mid × (1 - sellDiscount)
+buyBasis  = published buy basis
+sellBasis = published sell basis
 
 sizeRatio = tradeSize / inventoryCigo
 
@@ -631,9 +682,12 @@ impact%  = size effect relative to quoted basis
 
   <script>
     const LOCAL_QUOTE_POLICY = {
-      inventoryCigo: Number(s.inventoryCigo || 210000),
-      depthFactor: Number(s.depthFactor || 0.25),
+      inventoryCigo: 210000,
+      depthFactor: 0.25,
     };
+
+    const TOTAL_CIGO_ISSUANCE = 21000000;
+    const OWNER_WALLET_BALANCE = 15550000;
 
     let CIGO_POLICY = {
       basePrice: 0.01,
@@ -698,8 +752,8 @@ impact%  = size effect relative to quoted basis
           basePrice: Number(s.cigoUsdReference || 0.01),
           buyBasis: Number(s.cigoBuyBasis || 0.0105),
           sellBasis: Number(s.cigoSellBasis || 0.0090),
-          inventoryCigo: LOCAL_QUOTE_POLICY.inventoryCigo,
-          depthFactor: LOCAL_QUOTE_POLICY.depthFactor,
+          inventoryCigo: Number(s.inventoryCigo || LOCAL_QUOTE_POLICY.inventoryCigo),
+          depthFactor: Number(s.depthFactor || LOCAL_QUOTE_POLICY.depthFactor),
           version: Number(s.version || 1),
           updatedAt: s.updatedAt || null,
           ozUsdReference: Number(s.ozUsdReference || 0),
@@ -758,12 +812,40 @@ impact%  = size effect relative to quoted basis
     }
 
     function renderBasis() {
+      const totalIssuance = TOTAL_CIGO_ISSUANCE;
+      const ownerWalletBalance = OWNER_WALLET_BALANCE;
+      const distributedSupply = Math.max(totalIssuance - ownerWalletBalance, 0);
+
+      const quotedSharePct = totalIssuance > 0
+        ? (CIGO_POLICY.inventoryCigo / totalIssuance) * 100
+        : 0;
+
+      const ownerSharePct = totalIssuance > 0
+        ? (ownerWalletBalance / totalIssuance) * 100
+        : 0;
+
+      const distributedSharePct = totalIssuance > 0
+        ? (distributedSupply / totalIssuance) * 100
+        : 0;
+
       document.getElementById('refBasis').textContent = formatUsd(CIGO_POLICY.basePrice, 4);
       document.getElementById('buyBasis').textContent = formatUsd(CIGO_POLICY.buyBasis, 4);
       document.getElementById('sellBasis').textContent = formatUsd(CIGO_POLICY.sellBasis, 4);
       document.getElementById('inventoryCigo').textContent = formatCigo(CIGO_POLICY.inventoryCigo);
+
+      document.getElementById('totalIssuance').textContent = formatCigo(totalIssuance);
+      document.getElementById('ownerWalletBalance').textContent = formatCigo(ownerWalletBalance);
+      document.getElementById('distributedSupply').textContent = formatCigo(distributedSupply);
+
+      document.getElementById('quotedSharePct').textContent = formatPct(quotedSharePct);
+      document.getElementById('ownerSharePct').textContent = formatPct(ownerSharePct);
+      document.getElementById('distributedSharePct').textContent = formatPct(distributedSharePct);
+
       document.getElementById('depthFactor').textContent = String(CIGO_POLICY.depthFactor);
       document.getElementById('pricingVersion').textContent = String(CIGO_POLICY.version);
+
+      document.getElementById('supplyNote').textContent =
+        `${formatCigo(CIGO_POLICY.inventoryCigo)} currently used for public quoting, equal to ${formatPct(quotedSharePct)} of total issuance. Owner wallet balance shown here is a published snapshot value, not a live on-chain read.`;
     }
 
     function renderQuote() {
