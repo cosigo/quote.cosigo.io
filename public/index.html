@@ -411,6 +411,19 @@
       color: #ffe1e1;
     }
 
+    .ticker-shell {
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    .ticker-frame {
+      display: block;
+      width: 100%;
+      height: 72px;
+      border: 0;
+      background: transparent;
+    }
+
     @media (max-width: 980px) {
 
       .hero-grid,
@@ -580,6 +593,30 @@
       </div>
     </section>
 
+    <section class="section wrap" aria-labelledby="spot-ref-title" style="padding-top:0;">
+      <div class="card" style="margin-top:14px;">
+        <div class="hd">
+          <div class="title" id="spot-ref-title">Live silver and currency reference</div>
+          <div class="hint">
+            → this ticker is 3rd party and COSIGO&trade; is not responsible for any error it may present.
+            Only CIGO is accurately displayed. Input below
+          </div>
+        </div>
+
+        <div class="ticker-shell" style="margin-top:16px;">
+          <iframe src="/assets/silver-ticker.html" loading="lazy" title="Live silver and currency ticker"
+            class="ticker-frame">
+          </iframe>
+        </div>
+
+        <div style="padding-top:12px;">
+          <p class="value-live-note">
+            Market quotation is shown above. CIGO trade size is calculated below.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <section class="section wrap" id="calculator">
       <h2>size-adjusted quote calculator</h2>
 
@@ -668,7 +705,18 @@ impact%  = size effect relative to quoted basis
               the resulting execution quote, and the price impact.
             </p>
           </div>
+
+          <div class="note-box" style="margin-top:18px;">
+            <h3>wallet price visibility</h3>
+            <p>
+              Wallet apps may display zero when third-party data providers have not recognized a market price.
+              That does not mean the token is nonfunctional. This quote page publishes the reference basis and
+              visible pricing logic directly.
+            </p>
+          </div>
+
         </aside>
+
       </div>
     </section>
   </main>
