@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>quote.cosigo.io — transparent CIGO pricing</title>
+  <meta name="description"
+    content="Transparent CIGO pricing engine with public quote basis, visible formula, buy and sell quotes, price impact, and user-verifiable math." />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://quote.cosigo.io/" />
+
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --bg2: #131821;
+      --panel: rgba(255, 255, 255, 0.04);
+      --line: rgba(255, 255, 255, 0.10);
+      --text: #eef3f9;
+      --muted: #9cabbd;
+      --gold: #ffb84d;
+      --gold2: #ff8a3d;
+      --blue: #68a9ff;
+      --green: #47d18c;
+      --red: #ff8f8f;
+      --radius: 22px;
+      --shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+      --max: 1180px;
+      --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: var(--font);
+      color: var(--text);
+      background:
+        linear-gradient(180deg, rgba(255, 184, 77, 0.06), rgba(255, 184, 77, 0) 18%),
+        linear-gradient(180deg, #0a0c10 0%, #0e131a 100%);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .wrap {
+      width: min(calc(100% - 28px), var(--max));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(12px);
+      background: rgba(10, 12, 16, 0.72);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .topbar-inner {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: .03em;
+      text-transform: lowercase;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+      display: block;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .brand small {
+      display: block;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-size: 10px;
+      margin-top: 2px;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .nav a {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      line-height: 1;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 14px;
+      transition: .2s ease;
+    }
+
+    .nav a:hover {
+      color: var(--text);
+      border-color: rgba(255, 184, 77, 0.35);
+      background: rgba(255, 184, 77, 0.06);
+    }
+
+    .hero {
+      padding: 54px 0 22px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .card,
+    .panel {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border: 1px solid rgba(255, 184, 77, 0.18);
+      background: rgba(255, 184, 77, 0.06);
+      border-radius: 999px;
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 18px 0 12px;
+      font-size: clamp(38px, 7vw, 76px);
+      line-height: .94;
+      letter-spacing: -.04em;
+    }
+
+    .lead {
+      margin: 0;
+      color: #d7e0ea;
+      font-size: clamp(17px, 2.2vw, 22px);
+      line-height: 1.55;
+      max-width: 760px;
+    }
+
+    .lead strong {
+      color: #fff;
+    }
+
+    .notice {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--gold);
+      border-radius: 14px;
+      background: rgba(255, 184, 77, 0.08);
+      color: #eadcc6;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .section {
+      padding: 20px 0 12px;
+    }
+
+    .section h2 {
+      margin: 0 0 16px;
+      font-size: 14px;
+      color: var(--muted);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .stats {
+      display: grid;
+      gap: 12px;
+    }
+
+    .stat {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      padding: 14px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .stat:first-child {
+      border-top: 0;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-family: var(--mono);
+      font-size: 14px;
+      text-align: right;
+      word-break: break-word;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .calc {
+      display: grid;
+      gap: 14px;
+    }
+
+    .row {
+      display: grid;
+      gap: 8px;
+    }
+
+    .row label {
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    input,
+    select,
+    button {
+      min-height: 52px;
+      width: 100%;
+      padding: 0 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+      font: inherit;
+    }
+
+    button {
+      font-weight: 800;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      color: #16110b;
+      border-color: transparent;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 10px;
+    }
+
+    .result-box,
+    .formula-box,
+    .note-box {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .result-box h3,
+    .formula-box h3,
+    .note-box h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      letter-spacing: -.02em;
+    }
+
+    .result-line {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      padding: 8px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .result-line:first-child {
+      border-top: 0;
+    }
+
+    .result-line strong {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .result-line span {
+      font-family: var(--mono);
+      text-align: right;
+      word-break: break-word;
+    }
+
+    .formula-box code {
+      display: block;
+      white-space: pre-wrap;
+      line-height: 1.7;
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.03);
+      overflow-wrap: anywhere;
+    }
+
+    .note-box p {
+      margin: 0;
+      color: #cbd3de;
+      line-height: 1.7;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .cta-row a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      font-weight: 800;
+      letter-spacing: .01em;
+      transition: .2s ease;
+    }
+
+    .cta-row a:hover {
+      border-color: rgba(255, 184, 77, 0.35);
+      background: rgba(255, 184, 77, 0.06);
+    }
+
+    .footer {
+      padding: 42px 0 72px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .footer-card {
+      padding: 20px 22px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .buy {
+      color: #d9f7e7;
+    }
+
+    .sell {
+      color: #ffe1e1;
+    }
+
+    @media (max-width: 980px) {
+
+      .hero-grid,
+      .grid-2,
+      .result-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px 0;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .wrap {
+        width: min(calc(100% - 20px), var(--max));
+      }
+
+      .card,
+      .panel {
+        padding: 20px;
+      }
+
+      .nav,
+      .cta-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 100%;
+      }
+
+      .nav a {
+        width: 100%;
+      }
+
+      .stat,
+      .result-line {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .stat-value,
+      .result-line span {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="https://quote.cosigo.io/">
+        <img src="/shared/assets/icons/cosigo_master_256.png" alt="COSIGO token icon" class="brand-icon">
+        <img src="/shared/assets/icons/cigo_256.png" alt="CIGO token icon" class="brand-icon">
+        <span>
+          transparent CIGO quote engine
+          <small>reference · quote · education</small>
+        </span>
+      </a>
+
+      <nav class="nav" aria-label="Primary">
+        <a href="#basis">quote basis</a>
+        <a href="#calculator">calculator</a>
+        <a href="#formula">formula</a>
+        <a href="https://trade.cosigo.io/">trade shell</a>
+        <a href="https://market.cosigo.io/">CIGO market</a>
+        <a href="https://token.cosigo.io/">official COSIGO</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero wrap">
+      <div class="hero-grid">
+        <div class="card">
+          <div class="eyebrow">transparent pricing rail</div>
+          <h1>public quote.<br>visible inputs.<br>reproducible result.</h1>
+          <p class="lead">
+            This page does not ask the user to trust an unexplained market price.
+            It shows a <strong>reference basis</strong>, a <strong>public pricing rule</strong>,
+            a <strong>size-adjusted execution quote</strong>, and the exact
+            <strong>price impact</strong> for the amount entered.
+          </p>
+
+          <div class="notice">
+            A number on a screen is not automatically truth. A trustworthy quote should show its inputs,
+            its rule, its size effect, and its result. This page is built so the user can reproduce the quote.
+          </div>
+
+          <div class="cta-row">
+            <a href="https://trade.cosigo.io/">open trade shell</a>
+            <a href="https://market.cosigo.io/">open CIGO market page</a>
+            <a href="https://token.cosigo.io/">open official COSIGO</a>
+          </div>
+        </div>
+
+        <aside class="card" id="basis">
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-label">reference basis</div>
+              <div class="stat-value" id="refBasis">$0.0100</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">official buy basis</div>
+              <div class="stat-value" id="buyBasis">$0.0105</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">official sell basis</div>
+              <div class="stat-value" id="sellBasis">$0.0090</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">quoted inventory</div>
+              <div class="stat-value" id="inventoryCigo">210,000 CIGO</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">depth factor</div>
+              <div class="stat-value" id="depthFactor">0.25</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">pricing version</div>
+              <div class="stat-value" id="pricingVersion">1</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section wrap" id="calculator">
+      <h2>size-adjusted quote calculator</h2>
+
+      <div class="grid-2">
+        <article class="panel">
+          <div class="calc">
+            <div class="row">
+              <label for="tradeSize">trade size (CIGO)</label>
+              <input id="tradeSize" type="number" min="0" step="0.1" value="5000" />
+            </div>
+
+            <div class="row">
+              <label for="side">quote side</label>
+              <select id="side">
+                <option value="buy">buy CIGO</option>
+                <option value="sell">sell CIGO</option>
+              </select>
+            </div>
+
+            <button type="button" id="calcBtn">calculate transparent quote</button>
+          </div>
+
+          <div class="result-grid">
+            <div class="result-box">
+              <h3 class="buy">quote result</h3>
+              <div class="result-line">
+                <strong>entered size</strong>
+                <span id="outSize">5,000 CIGO</span>
+              </div>
+              <div class="result-line">
+                <strong>quoted basis</strong>
+                <span id="outBasis">$0.0105</span>
+              </div>
+              <div class="result-line">
+                <strong>execution price</strong>
+                <span id="outExec">$0.0106</span>
+              </div>
+              <div class="result-line">
+                <strong>effective average price</strong>
+                <span id="outAvg">$0.0106</span>
+              </div>
+              <div class="result-line">
+                <strong>total value</strong>
+                <span id="outTotal">$52.81</span>
+              </div>
+              <div class="result-line">
+                <strong>price impact</strong>
+                <span id="outImpact">0.60%</span>
+              </div>
+            </div>
+
+            <div class="note-box">
+              <h3>transparency note</h3>
+              <p id="explainText">
+                The number shown here is not presented as a mystical market truth.
+                It is a published rule-based quote using visible inputs and a visible adjustment rule.
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <aside class="panel" id="formula">
+          <div class="formula-box">
+            <h3>public pricing rule</h3>
+            <code id="formulaText">
+mid = basePrice
+
+buyBasis = mid × (1 + buySpread)
+sellBasis = mid × (1 - sellDiscount)
+
+sizeRatio = tradeSize / inventoryCigo
+
+buyExecutionPrice  = buyBasis  × (1 + depthFactor × sizeRatio)
+sellExecutionPrice = sellBasis × (1 - depthFactor × sizeRatio)
+
+totalUsd = tradeSize × executionPrice
+impact%  = size effect relative to quoted basis
+            </code>
+          </div>
+
+          <div class="note-box" style="margin-top:18px;">
+            <h3>why this is stronger</h3>
+            <p>
+              Opaque price claims ask the user to trust a result without seeing the rule.
+              This page does the opposite. It shows the basis, the adjustment, the entered size,
+              the resulting execution quote, and the price impact.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer wrap">
+    <div class="footer-card">
+      <strong>Phase note:</strong> this is the first transparent pricing page for the COSIGO / CIGO system.
+      It is designed to teach the user how visible quote logic is stronger than unexplained price claims.
+    </div>
+  </footer>
+
+  <script>
+    const LOCAL_QUOTE_POLICY = {
+      inventoryCigo: Number(s.inventoryCigo || 210000),
+      depthFactor: Number(s.depthFactor || 0.25),
+    };
+
+    let CIGO_POLICY = {
+      basePrice: 0.01,
+      buyBasis: 0.0105,
+      sellBasis: 0.0090,
+      inventoryCigo: LOCAL_QUOTE_POLICY.inventoryCigo,
+      depthFactor: LOCAL_QUOTE_POLICY.depthFactor,
+      version: 1,
+      updatedAt: null,
+      ozUsdReference: 0,
+      cosigoUsdBasis: 0,
+      digitalExitFeeRate: 0
+    };
+
+    function formatUsd(value, digits = 4) {
+      const num = Number(value);
+      if (!Number.isFinite(num)) return '$0.00';
+      return '$' + num.toLocaleString(undefined, {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits
+      });
+    }
+
+    function formatUsd2(value) {
+      const num = Number(value);
+      if (!Number.isFinite(num)) return '$0.00';
+      return '$' + num.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function formatCigo(value) {
+      const num = Number(value);
+      if (!Number.isFinite(num)) return '0 CIGO';
+      return num.toLocaleString(undefined, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 1
+      }) + ' CIGO';
+    }
+
+    function formatPct(value) {
+      const num = Number(value);
+      if (!Number.isFinite(num)) return '0%';
+      return num.toLocaleString(undefined, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      }) + '%';
+    }
+
+    async function loadPolicy() {
+      try {
+        const response = await fetch('/api/settings/public', { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`Policy load failed (${response.status})`);
+        }
+
+        const data = await response.json();
+        const s = data.settings || {};
+
+        CIGO_POLICY = {
+          basePrice: Number(s.cigoUsdReference || 0.01),
+          buyBasis: Number(s.cigoBuyBasis || 0.0105),
+          sellBasis: Number(s.cigoSellBasis || 0.0090),
+          inventoryCigo: LOCAL_QUOTE_POLICY.inventoryCigo,
+          depthFactor: LOCAL_QUOTE_POLICY.depthFactor,
+          version: Number(s.version || 1),
+          updatedAt: s.updatedAt || null,
+          ozUsdReference: Number(s.ozUsdReference || 0),
+          cosigoUsdBasis: Number(s.cosigoUsdBasis || 0),
+          digitalExitFeeRate: Number(s.digitalExitFeeRate || 0)
+        };
+      } catch (err) {
+        console.warn('Using local fallback quote policy:', err);
+      }
+
+      renderBasis();
+      renderQuote();
+    }
+
+    function getTransparentCigoQuote({ side, tradeSize, buyBasis, sellBasis, inventoryCigo, depthFactor }) {
+      const size = Number(tradeSize);
+      const inv = Number(inventoryCigo);
+
+      if (!Number.isFinite(size) || size <= 0) throw new Error('Invalid trade size');
+      if (!Number.isFinite(inv) || inv <= 0) throw new Error('Invalid inventory');
+
+      const sizeRatio = size / inv;
+      const quotedBasis = side === 'buy' ? Number(buyBasis) : Number(sellBasis);
+
+      if (!Number.isFinite(quotedBasis) || quotedBasis <= 0) {
+        throw new Error('Invalid quote basis');
+      }
+
+      if (side === 'buy') {
+        const executionPrice = quotedBasis * (1 + Number(depthFactor || 0) * sizeRatio);
+        const totalUsd = size * executionPrice;
+        const impactPct = ((executionPrice / quotedBasis) - 1) * 100;
+
+        return {
+          side,
+          quotedBasis,
+          executionPrice,
+          totalUsd,
+          averagePrice: totalUsd / size,
+          impactPct
+        };
+      }
+
+      const executionPrice = quotedBasis * (1 - Number(depthFactor || 0) * sizeRatio);
+      const totalUsd = size * executionPrice;
+      const impactPct = (1 - (executionPrice / quotedBasis)) * 100;
+
+      return {
+        side,
+        quotedBasis,
+        executionPrice,
+        totalUsd,
+        averagePrice: totalUsd / size,
+        impactPct
+      };
+    }
+
+    function renderBasis() {
+      document.getElementById('refBasis').textContent = formatUsd(CIGO_POLICY.basePrice, 4);
+      document.getElementById('buyBasis').textContent = formatUsd(CIGO_POLICY.buyBasis, 4);
+      document.getElementById('sellBasis').textContent = formatUsd(CIGO_POLICY.sellBasis, 4);
+      document.getElementById('inventoryCigo').textContent = formatCigo(CIGO_POLICY.inventoryCigo);
+      document.getElementById('depthFactor').textContent = String(CIGO_POLICY.depthFactor);
+      document.getElementById('pricingVersion').textContent = String(CIGO_POLICY.version);
+    }
+
+    function renderQuote() {
+      const size = Number(document.getElementById('tradeSize').value || 0);
+      const side = document.getElementById('side').value;
+
+      try {
+        const quote = getTransparentCigoQuote({
+          side,
+          tradeSize: size,
+          buyBasis: CIGO_POLICY.buyBasis,
+          sellBasis: CIGO_POLICY.sellBasis,
+          inventoryCigo: CIGO_POLICY.inventoryCigo,
+          depthFactor: CIGO_POLICY.depthFactor
+        });
+
+        document.getElementById('outSize').textContent = formatCigo(size);
+        document.getElementById('outBasis').textContent = formatUsd(quote.quotedBasis, 4);
+        document.getElementById('outExec').textContent = formatUsd(quote.executionPrice, 4);
+        document.getElementById('outAvg').textContent = formatUsd(quote.averagePrice, 4);
+        document.getElementById('outTotal').textContent = formatUsd2(quote.totalUsd);
+        document.getElementById('outImpact').textContent = formatPct(quote.impactPct);
+
+        document.getElementById('explainText').textContent =
+          side === 'buy'
+            ? 'This buy quote starts from the live public buy basis, then adjusts openly for entered size relative to quoted inventory.'
+            : 'This sell quote starts from the live public sell basis, then adjusts openly for entered size relative to quoted inventory.';
+      } catch (err) {
+        document.getElementById('explainText').textContent =
+          err.message || 'Invalid quote input.';
+      }
+    }
+
+    document.getElementById('calcBtn').addEventListener('click', renderQuote);
+    document.getElementById('tradeSize').addEventListener('input', renderQuote);
+    document.getElementById('side').addEventListener('change', renderQuote);
+
+    loadPolicy();
+  </script>
+</body>
+
+</html>
