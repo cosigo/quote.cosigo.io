@@ -237,6 +237,12 @@
       word-break: break-word;
     }
 
+    .stat-value a {
+      color: #fff;
+      text-decoration: underline;
+      overflow-wrap: anywhere;
+    }
+
     .stat-note {
       margin-top: 6px;
       padding: 14px 16px;
@@ -540,8 +546,13 @@
             </div>
 
             <div class="stat">
-              <div class="stat-label">quoted inventory</div>
-              <div class="stat-value" id="inventoryCigo">210,000 CIGO</div>
+              <div class="stat-label">available fulfillment</div>
+              <div class="stat-value" id="inventoryCigo">loading...</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-label">committed reserve</div>
+              <div class="stat-value" id="committedReserve">loading...</div>
             </div>
 
             <div class="stat">
@@ -550,33 +561,31 @@
             </div>
 
             <div class="stat">
-              <div class="stat-label">owner wallet balance</div>
-              <div class="stat-value" id="ownerWalletBalance">15,550,000 CIGO</div>
+              <div class="stat-label">available share of issuance</div>
+              <div class="stat-value" id="quotedSharePct">loading...</div>
             </div>
 
             <div class="stat">
-              <div class="stat-label">distributed outside owner</div>
-              <div class="stat-value" id="distributedSupply">5,450,000 CIGO</div>
+              <div class="stat-label">committed reserve share</div>
+              <div class="stat-value" id="reserveSharePct">loading...</div>
             </div>
 
             <div class="stat">
-              <div class="stat-label">quoted share of issuance</div>
-              <div class="stat-value" id="quotedSharePct">1.0%</div>
+              <div class="stat-label">custodian wallet</div>
+              <div class="stat-value">
+                <a id="custodianWalletLink" href="#" target="_blank" rel="noopener">loading...</a>
+              </div>
             </div>
 
             <div class="stat">
-              <div class="stat-label">owner-held share</div>
-              <div class="stat-value" id="ownerSharePct">74.05%</div>
-            </div>
-
-            <div class="stat">
-              <div class="stat-label">distributed share</div>
-              <div class="stat-value" id="distributedSharePct">25.95%</div>
+              <div class="stat-label">treasury reserve</div>
+              <div class="stat-value">
+                <a id="treasuryWalletLink" href="#" target="_blank" rel="noopener">loading...</a>
+              </div>
             </div>
 
             <div class="stat-note" id="supplyNote">
-              210,000 CIGO currently used for public quoting, equal to 1.0% of total issuance.
-              This is shown as quoted inventory, not a claim of deep two-way market liquidity.
+              Loading live fulfillment and reserve data...
             </div>
 
             <div class="stat">
@@ -735,7 +744,6 @@ impact%  = size effect relative to quoted basis
     };
 
     const TOTAL_CIGO_ISSUANCE = 21000000;
-    const OWNER_WALLET_BALANCE = 15550000;
 
     let CIGO_POLICY = {
       basePrice: 0.01,
@@ -748,6 +756,16 @@ impact%  = size effect relative to quoted basis
       ozUsdReference: 0,
       cosigoUsdBasis: 0,
       digitalExitFeeRate: 0
+    };
+
+    let CIGO_POOL = {
+      custodianAddress: '',
+      treasuryAddress: '',
+      custodianBalance: 0,
+      treasuryBalance: 0,
+      availableFulfillment: LOCAL_QUOTE_POLICY.inventoryCigo,
+      committedReserve: LOCAL_QUOTE_POLICY.inventoryCigo,
+      updatedAt: null
     };
 
     function formatUsd(value, digits = 4) {
@@ -786,14 +804,34 @@ impact%  = size effect relative to quoted basis
       }) + '%';
     }
 
+    function shortenAddress(address) {
+      const value = String(address || '').trim();
+      if (!value) return '-';
+      return `${value.slice(0, 6)}...${value.slice(-4)}`;
+    }
+
+    async function apiJson(url, options = {}) {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(options.headers || {})
+        },
+        cache: 'no-store'
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.error || `Request failed (${response.status})`);
+      }
+
+      return data;
+    }
+
     async function loadPolicy() {
       try {
-        const response = await fetch('/api/settings/public', { cache: 'no-store' });
-        if (!response.ok) {
-          throw new Error(`Policy load failed (${response.status})`);
-        }
-
-        const data = await response.json();
+        const data = await apiJson('/api/settings/public');
         const s = data.settings || {};
 
         CIGO_POLICY = {
@@ -811,9 +849,29 @@ impact%  = size effect relative to quoted basis
       } catch (err) {
         console.warn('Using local fallback quote policy:', err);
       }
+    }
 
-      renderBasis();
-      renderQuote();
+    async function loadPool() {
+      try {
+        const data = await apiJson('/api/pool/cigo');
+        const pool = data.pool || {};
+
+        CIGO_POOL = {
+          custodianAddress: pool.custodianAddress || '',
+          treasuryAddress: pool.treasuryAddress || '',
+          custodianBalance: Number(pool.custodianBalance || 0),
+          treasuryBalance: Number(pool.treasuryBalance || 0),
+          availableFulfillment: Number(pool.availableFulfillment || 0),
+          committedReserve: Number(pool.committedReserve || 0),
+          updatedAt: pool.updatedAt || null
+        };
+
+        if (Number.isFinite(CIGO_POOL.availableFulfillment) && CIGO_POOL.availableFulfillment > 0) {
+          CIGO_POLICY.inventoryCigo = CIGO_POOL.availableFulfillment;
+        }
+      } catch (err) {
+        console.warn('Using local fallback pool data:', err);
+      }
     }
 
     function getTransparentCigoQuote({ side, tradeSize, buyBasis, sellBasis, inventoryCigo, depthFactor }) {
@@ -861,39 +919,43 @@ impact%  = size effect relative to quoted basis
 
     function renderBasis() {
       const totalIssuance = TOTAL_CIGO_ISSUANCE;
-      const ownerWalletBalance = OWNER_WALLET_BALANCE;
-      const distributedSupply = Math.max(totalIssuance - ownerWalletBalance, 0);
+      const availableFulfillment = Number(CIGO_POOL.availableFulfillment || CIGO_POLICY.inventoryCigo || 0);
+      const committedReserve = Number(CIGO_POOL.committedReserve || 0);
 
       const quotedSharePct = totalIssuance > 0
-        ? (CIGO_POLICY.inventoryCigo / totalIssuance) * 100
+        ? (availableFulfillment / totalIssuance) * 100
         : 0;
 
-      const ownerSharePct = totalIssuance > 0
-        ? (ownerWalletBalance / totalIssuance) * 100
-        : 0;
-
-      const distributedSharePct = totalIssuance > 0
-        ? (distributedSupply / totalIssuance) * 100
+      const reserveSharePct = totalIssuance > 0
+        ? (committedReserve / totalIssuance) * 100
         : 0;
 
       document.getElementById('refBasis').textContent = formatUsd(CIGO_POLICY.basePrice, 4);
       document.getElementById('buyBasis').textContent = formatUsd(CIGO_POLICY.buyBasis, 4);
       document.getElementById('sellBasis').textContent = formatUsd(CIGO_POLICY.sellBasis, 4);
-      document.getElementById('inventoryCigo').textContent = formatCigo(CIGO_POLICY.inventoryCigo);
-
+      document.getElementById('inventoryCigo').textContent = formatCigo(availableFulfillment);
+      document.getElementById('committedReserve').textContent = formatCigo(committedReserve);
       document.getElementById('totalIssuance').textContent = formatCigo(totalIssuance);
-      document.getElementById('ownerWalletBalance').textContent = formatCigo(ownerWalletBalance);
-      document.getElementById('distributedSupply').textContent = formatCigo(distributedSupply);
-
       document.getElementById('quotedSharePct').textContent = formatPct(quotedSharePct);
-      document.getElementById('ownerSharePct').textContent = formatPct(ownerSharePct);
-      document.getElementById('distributedSharePct').textContent = formatPct(distributedSharePct);
-
+      document.getElementById('reserveSharePct').textContent = formatPct(reserveSharePct);
       document.getElementById('depthFactor').textContent = String(CIGO_POLICY.depthFactor);
       document.getElementById('pricingVersion').textContent = String(CIGO_POLICY.version);
 
+      const custodianWalletLink = document.getElementById('custodianWalletLink');
+      const treasuryWalletLink = document.getElementById('treasuryWalletLink');
+
+      if (custodianWalletLink) {
+        custodianWalletLink.textContent = shortenAddress(CIGO_POOL.custodianAddress);
+        custodianWalletLink.href = `https://bscscan.com/address/${CIGO_POOL.custodianAddress}`;
+      }
+
+      if (treasuryWalletLink) {
+        treasuryWalletLink.textContent = shortenAddress(CIGO_POOL.treasuryAddress);
+        treasuryWalletLink.href = `https://bscscan.com/address/${CIGO_POOL.treasuryAddress}`;
+      }
+
       document.getElementById('supplyNote').textContent =
-        `${formatCigo(CIGO_POLICY.inventoryCigo)} currently used for public quoting, equal to ${formatPct(quotedSharePct)} of total issuance. Owner wallet balance shown here is a published snapshot value, not a live on-chain read.`;
+        `${formatCigo(availableFulfillment)} currently available for fulfillment. ${formatCigo(committedReserve)} currently committed across treasury and custodian wallets. This section uses live pool data rather than a manual owner-balance snapshot.`;
     }
 
     function renderQuote() {
@@ -919,19 +981,26 @@ impact%  = size effect relative to quoted basis
 
         document.getElementById('explainText').textContent =
           side === 'buy'
-            ? 'This buy quote starts from the live public buy basis, then adjusts openly for entered size relative to quoted inventory.'
-            : 'This sell quote starts from the live public sell basis, then adjusts openly for entered size relative to quoted inventory.';
+            ? 'This buy quote starts from the live public buy basis, then adjusts openly for entered size relative to available fulfillment inventory.'
+            : 'This sell quote starts from the live public sell basis, then adjusts openly for entered size relative to available fulfillment inventory.';
       } catch (err) {
         document.getElementById('explainText').textContent =
           err.message || 'Invalid quote input.';
       }
     }
 
+    async function initQuotePage() {
+      await loadPolicy();
+      await loadPool();
+      renderBasis();
+      renderQuote();
+    }
+
     document.getElementById('calcBtn').addEventListener('click', renderQuote);
     document.getElementById('tradeSize').addEventListener('input', renderQuote);
     document.getElementById('side').addEventListener('change', renderQuote);
 
-    loadPolicy();
+    initQuotePage();
   </script>
 </body>
 
