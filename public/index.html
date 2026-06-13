@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>quote.cosigo.io — transparent CIGO pricing</title>
   <link rel="stylesheet" href="/shared/assets/trade.css">
-  <meta name="description" content="Indicative CIGO quote-depth engine with public basis, visible formula, buy and sell estimates, price impact, and user-verifiable math." />
+  <meta name="description" content="Indicative CIGO quote-depth engine with public basis, visible formula, buy and sell estimates, quote-depth adjustment, and user-verifiable math." />
   <meta name="author" content="COSIGO">
   <meta name="robots" content="index,follow" />
   <link rel="canonical" href="https://quote.cosigo.io/" />
@@ -562,9 +562,17 @@
           <p class="lead">
             This page does not ask the user to trust an unexplained market price.
             It shows an <strong>indicative reference basis</strong>, a <strong>public pricing rule</strong>,
-            a <strong>size-adjusted execution quote</strong>, and the exact
-            <strong>price impact</strong> for the amount entered.
+            a <strong>size-adjusted quote-depth estimate</strong>, and the exact
+            <strong>quote-depth adjustment</strong> for the amount entered.
           </p>
+
+
+            <div class="notice warning">
+              <strong>Live swap price warning:</strong>
+              This calculator uses a published linear quote-depth model. It is not PancakeSwap reserve math and should not be expected to match PancakeSwap within a few basis points.
+              PancakeSwap uses live AMM reserves, pool fees, token tax, slippage, and current pool movement.
+              For live execution estimates, use <a href="https://trade.cosigo.io/" target="_blank" rel="noopener"><strong>trade.cosigo.io ↗</strong></a>.
+            </div>
 
             <div class="notice warning">
               <strong>Important:</strong>
@@ -707,8 +715,16 @@
                 <span id="outTotal">$52.81</span>
               </div>
               <div class="result-line">
-                <strong>price impact</strong>
+                <strong>quote-depth adjustment</strong>
                 <span id="outImpact">0.60%</span>
+              </div>
+              <div class="result-line">
+                <strong>ballpark execution costs</strong>
+                <span id="outFeeAssumption">CIGO tax + Pancake fee</span>
+              </div>
+              <div class="result-line">
+                <strong id="outFeeAdjustedLabel">ballpark fee-adjusted estimate</strong>
+                <span id="outFeeAdjusted">$0.00</span>
               </div>
             </div>
 
@@ -746,7 +762,7 @@ impact%  = size effect relative to quoted basis
             <p>
               Opaque price claims ask the user to trust a result without seeing the rule.
               This page does the opposite. It shows the basis, the adjustment, the entered size,
-              the resulting indicative quote estimate, and the price impact. The reference basis is a published quote basis, not the live PancakeSwap pool price.
+              the resulting indicative quote estimate, and the quote-depth adjustment. The reference basis is a published quote basis, not the live PancakeSwap pool price.
             </p>
           </div>
 
@@ -804,6 +820,13 @@ impact%  = size effect relative to quoted basis
     };
 
     const TOTAL_CIGO_ISSUANCE = 21000000;
+
+    // Estimated live execution cost assumptions.
+    // These are not a guaranteed PancakeSwap quote; they help compare the quote-depth model
+    // against likely live execution drag.
+    const CIGO_BUY_TAX_BPS = 50;       // 0.50%
+    const CIGO_SELL_TAX_BPS = 100;     // 1.00%
+    const PANCAKE_V2_FEE_BPS = 25;     // 0.25%
 
     let CIGO_POLICY = {
       basePrice: 0.01,
@@ -1022,6 +1045,28 @@ impact%  = size effect relative to quoted basis
         `${formatCigo(availableFulfillment)} currently live in PancakeSwap CIGO pools. ${formatCigo(committedReserve)} currently committed across treasury and custodian wallets. This section uses live pool data rather than a manual owner-balance snapshot.`;
     }
 
+    function estimatedExecutionAdjustment(quote) {
+      const taxBps = quote.side === 'buy' ? CIGO_BUY_TAX_BPS : CIGO_SELL_TAX_BPS;
+      const totalBps = taxBps + PANCAKE_V2_FEE_BPS;
+      const feeRate = totalBps / 10000;
+
+      if (quote.side === 'buy') {
+        return {
+          totalBps,
+          label: 'ballpark live buy cost',
+          value: quote.totalUsd * (1 + feeRate),
+          text: `CIGO buy tax ${(CIGO_BUY_TAX_BPS / 100).toFixed(2)}% + Pancake V2 fee ${(PANCAKE_V2_FEE_BPS / 100).toFixed(2)}% = ${(totalBps / 100).toFixed(2)}%`
+        };
+      }
+
+      return {
+        totalBps,
+        label: 'ballpark live sell proceeds',
+        value: quote.totalUsd * (1 - feeRate),
+        text: `CIGO sell tax ${(CIGO_SELL_TAX_BPS / 100).toFixed(2)}% + Pancake V2 fee ${(PANCAKE_V2_FEE_BPS / 100).toFixed(2)}% = ${(totalBps / 100).toFixed(2)}%`
+      };
+    }
+
     function renderQuote() {
       const size = Number(document.getElementById('tradeSize').value || 0);
       const side = document.getElementById('side').value;
@@ -1043,10 +1088,15 @@ impact%  = size effect relative to quoted basis
         document.getElementById('outTotal').textContent = formatUsd2(quote.totalUsd);
         document.getElementById('outImpact').textContent = formatPct(quote.impactPct);
 
+        const feeEstimate = estimatedExecutionAdjustment(quote);
+        document.getElementById('outFeeAssumption').textContent = feeEstimate.text;
+        document.getElementById('outFeeAdjustedLabel').textContent = feeEstimate.label;
+        document.getElementById('outFeeAdjusted').textContent = formatUsd2(feeEstimate.value);
+
         document.getElementById('explainText').textContent =
           side === 'buy'
-            ? 'This buy estimate starts from the published public buy basis, then adjusts openly for entered size relative to quote-depth inventory. It may differ from PancakeSwap live execution.'
-            : 'This sell estimate starts from the published public sell basis, then adjusts openly for entered size relative to quote-depth inventory. It may differ from PancakeSwap live execution.';
+            ? 'This buy estimate starts from the published public buy basis, then adjusts openly for entered size relative to quote-depth inventory. The ballpark fee-adjusted line adds estimated CIGO buy tax and Pancake V2 fee for comparison with live execution. It is a comparison aid, not a guaranteed swap quote.'
+            : 'This sell estimate starts from the published public sell basis, then adjusts openly for entered size relative to quote-depth inventory. The ballpark fee-adjusted line subtracts estimated CIGO sell tax and Pancake V2 fee for comparison with live execution. It is a comparison aid, not a guaranteed swap quote.';
       } catch (err) {
         document.getElementById('explainText').textContent =
           err.message || 'Invalid quote input.';
