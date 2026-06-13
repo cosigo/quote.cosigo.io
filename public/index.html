@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>quote.cosigo.io — transparent CIGO pricing</title>
   <link rel="stylesheet" href="/shared/assets/trade.css">
-  <meta name="description" content="Transparent CIGO pricing engine with public quote basis, visible formula, buy and sell quotes, price impact, and user-verifiable math." />
+  <meta name="description" content="Indicative CIGO quote-depth engine with public basis, visible formula, buy and sell estimates, price impact, and user-verifiable math." />
   <meta name="author" content="COSIGO">
   <meta name="robots" content="index,follow" />
   <link rel="canonical" href="https://quote.cosigo.io/" />
@@ -561,10 +561,19 @@
           <h1>public quote.<br>visible inputs.<br>reproducible result.</h1>
           <p class="lead">
             This page does not ask the user to trust an unexplained market price.
-            It shows a <strong>reference basis</strong>, a <strong>public pricing rule</strong>,
+            It shows an <strong>indicative reference basis</strong>, a <strong>public pricing rule</strong>,
             a <strong>size-adjusted execution quote</strong>, and the exact
             <strong>price impact</strong> for the amount entered.
           </p>
+
+            <div class="notice warning">
+              <strong>Important:</strong>
+              This page is an indicative CIGO quote-depth estimate, not a guaranteed PancakeSwap execution quote.
+              Live pool swaps use actual PancakeSwap reserve math, pool fees, CIGO contract tax, gas, and slippage.
+              For live execution, use <a href="https://trade.cosigo.io/" target="_blank" rel="noopener"><strong>trade.cosigo.io ↗</strong></a>
+              and review the Rabby confirmation before signing.
+            </div>
+
 
           <div class="notice">
             A number on a screen is not automatically truth. A trustworthy quote should show its inputs,
@@ -737,7 +746,7 @@ impact%  = size effect relative to quoted basis
             <p>
               Opaque price claims ask the user to trust a result without seeing the rule.
               This page does the opposite. It shows the basis, the adjustment, the entered size,
-              the resulting execution quote, and the price impact.
+              the resulting indicative quote, and the price impact. It is not a guaranteed PancakeSwap execution price.
             </p>
           </div>
 
@@ -1036,8 +1045,8 @@ impact%  = size effect relative to quoted basis
 
         document.getElementById('explainText').textContent =
           side === 'buy'
-            ? 'This buy quote starts from the live public buy basis, then adjusts openly for entered size relative to published quote-depth inventory.'
-            : 'This sell quote starts from the live public sell basis, then adjusts openly for entered size relative to published quote-depth inventory.';
+            ? 'This buy estimate starts from the published public buy basis, then adjusts openly for entered size relative to quote-depth inventory. It may differ from PancakeSwap live execution.'
+            : 'This sell estimate starts from the published public sell basis, then adjusts openly for entered size relative to quote-depth inventory. It may differ from PancakeSwap live execution.';
       } catch (err) {
         document.getElementById('explainText').textContent =
           err.message || 'Invalid quote input.';
