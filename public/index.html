@@ -596,7 +596,7 @@
             </div>
 
             <div class="stat">
-              <div class="stat-label">available fulfillment</div>
+              <div class="stat-label">quote depth / live pool cap</div>
               <div class="stat-value" id="inventoryCigo">loading...</div>
             </div>
 
@@ -790,7 +790,7 @@ impact%  = size effect relative to quoted basis
 
   <script>
     const LOCAL_QUOTE_POLICY = {
-      inventoryCigo: 210000,
+      inventoryCigo: 300000,
       depthFactor: 0.25,
     };
 
@@ -918,7 +918,11 @@ impact%  = size effect relative to quoted basis
         };
 
         if (Number.isFinite(CIGO_POOL.availableFulfillment) && CIGO_POOL.availableFulfillment > 0) {
-          CIGO_POLICY.inventoryCigo = CIGO_POOL.availableFulfillment;
+          // Quote depth is capped by the published local quote depth and cannot exceed live pool liquidity.
+          CIGO_POLICY.inventoryCigo = Math.min(
+            LOCAL_QUOTE_POLICY.inventoryCigo,
+            CIGO_POOL.availableFulfillment
+          );
         }
       } catch (err) {
         console.warn('Using local fallback pool data:', err);
@@ -1006,7 +1010,7 @@ impact%  = size effect relative to quoted basis
       }
 
       document.getElementById('supplyNote').textContent =
-        `${formatCigo(availableFulfillment)} currently available for fulfillment. ${formatCigo(committedReserve)} currently committed across treasury and custodian wallets. This section uses live pool data rather than a manual owner-balance snapshot.`;
+        `${formatCigo(availableFulfillment)} currently live in PancakeSwap CIGO pools. ${formatCigo(committedReserve)} currently committed across treasury and custodian wallets. This section uses live pool data rather than a manual owner-balance snapshot.`;
     }
 
     function renderQuote() {
@@ -1032,8 +1036,8 @@ impact%  = size effect relative to quoted basis
 
         document.getElementById('explainText').textContent =
           side === 'buy'
-            ? 'This buy quote starts from the live public buy basis, then adjusts openly for entered size relative to available fulfillment inventory.'
-            : 'This sell quote starts from the live public sell basis, then adjusts openly for entered size relative to available fulfillment inventory.';
+            ? 'This buy quote starts from the live public buy basis, then adjusts openly for entered size relative to published quote-depth inventory.'
+            : 'This sell quote starts from the live public sell basis, then adjusts openly for entered size relative to published quote-depth inventory.';
       } catch (err) {
         document.getElementById('explainText').textContent =
           err.message || 'Invalid quote input.';
