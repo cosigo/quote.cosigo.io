@@ -568,7 +568,7 @@
 
             <div class="notice warning">
               <strong>Important:</strong>
-              This page is an indicative CIGO quote-depth estimate, not a guaranteed PancakeSwap execution quote.
+              This page is an indicative CIGO quote-depth estimate, not a guaranteed PancakeSwap execution quote. The reference basis may differ from the live PancakeSwap pool price.
               Live pool swaps use actual PancakeSwap reserve math, pool fees, CIGO contract tax, gas, and slippage.
               For live execution, use <a href="https://trade.cosigo.io/" target="_blank" rel="noopener"><strong>trade.cosigo.io ↗</strong></a>
               and review the Rabby confirmation before signing.
@@ -680,12 +680,12 @@
               </select>
             </div>
 
-            <button type="button" id="calcBtn">calculate transparent quote</button>
+            <button type="button" id="calcBtn">calculate quote estimate</button>
           </div>
 
           <div class="result-grid">
             <div class="result-box">
-              <h3 class="buy">quote result</h3>
+              <h3 class="buy">quote estimate result</h3>
               <div class="result-line">
                 <strong>entered size</strong>
                 <span id="outSize">5,000 CIGO</span>
@@ -695,11 +695,11 @@
                 <span id="outBasis">$0.0105</span>
               </div>
               <div class="result-line">
-                <strong>execution price</strong>
+                <strong>size-adjusted price</strong>
                 <span id="outExec">$0.0106</span>
               </div>
               <div class="result-line">
-                <strong>effective average price</strong>
+                <strong>estimated average price</strong>
                 <span id="outAvg">$0.0106</span>
               </div>
               <div class="result-line">
@@ -746,7 +746,7 @@ impact%  = size effect relative to quoted basis
             <p>
               Opaque price claims ask the user to trust a result without seeing the rule.
               This page does the opposite. It shows the basis, the adjustment, the entered size,
-              the resulting indicative quote, and the price impact. It is not a guaranteed PancakeSwap execution price.
+              the resulting indicative quote estimate, and the price impact. The reference basis is a published quote basis, not the live PancakeSwap pool price.
             </p>
           </div>
 
