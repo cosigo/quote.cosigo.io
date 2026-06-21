@@ -1,2 +1,5 @@
 *.bak.*
 public/*.bak.*
+backups/
+*.tmp
+*.log
