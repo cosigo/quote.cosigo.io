@@ -3,3 +3,9 @@ public/*.bak.*
 backups/
 *.tmp
 *.log
+
+# local edit backups
+public/*.bak-*
+public/*.backup*
+public/*.tmp
+public/*.part
