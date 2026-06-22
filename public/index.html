@@ -7,7 +7,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>quote.cosigo.io — transparent CIGO pricing</title>
   <link rel="stylesheet" href="/shared/assets/trade.css?v=20260614-054012">
-  <meta name="description" content="Indicative CIGO quote-depth engine with public basis, visible formula, buy and sell estimates, quote-depth adjustment, and user-verifiable math." />
+  <link rel="stylesheet" href="/shared/assets/style.css?v=20260621-1945">
+  <meta name="description"
+    content="Indicative CIGO quote-depth engine with public basis, visible formula, buy and sell estimates, quote-depth adjustment, and user-verifiable math." />
   <meta name="author" content="COSIGO">
   <meta name="robots" content="index,follow" />
   <link rel="canonical" href="https://quote.cosigo.io/" />
@@ -31,531 +33,6 @@
   <meta property="og:image" content="https://quote.cosigo.io/shared/assets/icons/cigo_256.png">
   <meta property="og:image" content="https://quote.cosigo.io/shared/assets/icons/cosigo_master_256.png">
   <script src="/shared/assets/mobile-nav.js?v=20260614-054012" defer></script>
-
-<style id="site-appendix-footer-style">
-.site-appendix-footer {
-  margin: 28px auto 0;
-  padding: 18px 16px 26px;
-  text-align: center;
-  font-size: 0.88rem;
-  opacity: 0.78;
-}
-.site-appendix-footer a {
-  color: inherit;
-  text-decoration: none;
-  border-bottom: 1px dotted currentColor;
-}
-.site-appendix-footer a:hover,
-.site-appendix-footer a:focus-visible {
-  opacity: 1;
-  border-bottom-style: solid;
-}
-</style>
-
-
-<style id="cigo-market-pill-inline-css">
-  .cigo-market-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 10px 3px 5px;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 226, 150, 0.50);
-    background: rgba(0,0,0,0.24);
-    box-shadow: 0 0 12px rgba(214, 174, 94, 0.18);
-  }
-  .cigo-market-pill img {
-    width: 18px;
-    height: 18px;
-    border-radius: 999px;
-    display: block;
-  }
-</style>
-
-</head>
-
-  <style>
-    :root {
-      --bg: #0a0c10;
-      --bg2: #131821;
-      --panel: rgba(255, 255, 255, 0.04);
-      --line: rgba(255, 255, 255, 0.10);
-      --text: #eef3f9;
-      --muted: #9cabbd;
-      --gold: #ffb84d;
-      --gold2: #ff8a3d;
-      --blue: #68a9ff;
-      --green: #47d18c;
-      --red: #ff8f8f;
-      --radius: 22px;
-      --shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
-      --max: 1180px;
-      --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      --mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      min-height: 100vh;
-      font-family: var(--font);
-      color: var(--text);
-      background:
-        linear-gradient(180deg, rgba(255, 184, 77, 0.06), rgba(255, 184, 77, 0) 18%),
-        linear-gradient(180deg, #0a0c10 0%, #0e131a 100%);
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .wrap {
-      width: min(calc(100% - 28px), var(--max));
-      margin: 0 auto;
-    }
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      backdrop-filter: blur(12px);
-      background: rgba(10, 12, 16, 0.72);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .topbar-inner {
-      min-height: 72px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
-
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 800;
-      letter-spacing: .03em;
-      text-transform: lowercase;
-    }
-
-    .brand-icon {
-      width: 36px;
-      height: 36px;
-      flex: 0 0 36px;
-      display: block;
-      object-fit: cover;
-      border-radius: 50%;
-    }
-
-    .brand small {
-      display: block;
-      color: var(--muted);
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      font-size: 10px;
-      margin-top: 2px;
-    }
-
-    .nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: flex-end;
-    }
-
-    .nav a {
-      display: inline-flex;
-      align-items: center;
-      padding: 8px 12px;
-      line-height: 1;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      color: var(--muted);
-      font-size: 14px;
-      transition: .2s ease;
-    }
-
-    .nav a:hover {
-      color: var(--text);
-      border-color: rgba(255, 184, 77, 0.35);
-      background: rgba(255, 184, 77, 0.06);
-    }
-
-    .hero {
-      padding: 54px 0 22px;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 22px;
-      align-items: stretch;
-    }
-
-    .card,
-    .panel {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015));
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 28px;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 12px;
-      border: 1px solid rgba(255, 184, 77, 0.18);
-      background: rgba(255, 184, 77, 0.06);
-      border-radius: 999px;
-      color: var(--gold);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-    }
-
-    h1 {
-      margin: 18px 0 12px;
-      font-size: clamp(38px, 7vw, 76px);
-      line-height: .94;
-      letter-spacing: -.04em;
-    }
-
-    .lead {
-      margin: 0;
-      color: #d7e0ea;
-      font-size: clamp(17px, 2.2vw, 22px);
-      line-height: 1.55;
-      max-width: 760px;
-    }
-
-    .lead strong {
-      color: #fff;
-    }
-
-    .notice {
-      margin-top: 18px;
-      padding: 14px 16px;
-      border-left: 4px solid var(--gold);
-      border-radius: 14px;
-      background: rgba(255, 184, 77, 0.08);
-      color: #eadcc6;
-      line-height: 1.6;
-      font-size: 14px;
-    }
-
-    .section {
-      padding: 20px 0 12px;
-    }
-
-    .section h2 {
-      margin: 0 0 16px;
-      font-size: 14px;
-      color: var(--muted);
-      letter-spacing: .1em;
-      text-transform: uppercase;
-    }
-
-    .stats {
-      display: grid;
-      gap: 12px;
-    }
-
-    .stat {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 14px;
-      padding: 14px 0;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .stat:first-child {
-      border-top: 0;
-    }
-
-    .stat-label {
-      color: var(--muted);
-      font-size: 13px;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-
-    .stat-value {
-      font-family: var(--mono);
-      font-size: 14px;
-      text-align: right;
-      word-break: break-word;
-    }
-
-    .stat-value a {
-      color: #fff;
-      text-decoration: underline;
-      overflow-wrap: anywhere;
-    }
-
-    .stat-note {
-      margin-top: 6px;
-      padding: 14px 16px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      background: rgba(255, 255, 255, 0.025);
-      color: #cbd3de;
-      font-size: 13px;
-      line-height: 1.65;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-    }
-
-    .calc {
-      display: grid;
-      gap: 14px;
-    }
-
-    .row {
-      display: grid;
-      gap: 8px;
-    }
-
-    .row label {
-      font-size: 13px;
-      color: var(--muted);
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-
-    input,
-    select,
-    button {
-      min-height: 52px;
-      width: 100%;
-      padding: 0 14px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--text);
-      font: inherit;
-    }
-
-    button {
-      font-weight: 800;
-      cursor: pointer;
-      background: linear-gradient(135deg, var(--gold), var(--gold2));
-      color: #16110b;
-      border-color: transparent;
-    }
-
-    button:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.03);
-    }
-
-    .result-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-top: 10px;
-    }
-
-    .result-box,
-    .formula-box,
-    .note-box {
-      padding: 18px;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .result-box h3,
-    .formula-box h3,
-    .note-box h3 {
-      margin: 0 0 10px;
-      font-size: 18px;
-      letter-spacing: -.02em;
-    }
-
-    .result-line {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      padding: 8px 0;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .result-line:first-child {
-      border-top: 0;
-    }
-
-    .result-line strong {
-      color: var(--muted);
-      font-size: 12px;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-
-    .result-line span {
-      font-family: var(--mono);
-      text-align: right;
-      word-break: break-word;
-    }
-
-    .formula-box code {
-      display: block;
-      white-space: pre-wrap;
-      line-height: 1.7;
-      font-family: var(--mono);
-      font-size: 13px;
-      padding: 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      background: rgba(255, 255, 255, 0.03);
-      overflow-wrap: anywhere;
-    }
-
-    .note-box p {
-      margin: 0;
-      color: #cbd3de;
-      line-height: 1.7;
-    }
-
-    .cta-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .cta-row a {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 48px;
-      padding: 0 18px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      font-weight: 800;
-      letter-spacing: .01em;
-      transition: .2s ease;
-    }
-
-    .cta-row a:hover {
-      border-color: rgba(255, 184, 77, 0.35);
-      background: rgba(255, 184, 77, 0.06);
-    }
-
-    .cta-row a.gold-pill {
-      border-color: transparent;
-      background: linear-gradient(135deg, var(--gold), var(--gold2));
-      color: #16110b;
-      box-shadow: 0 0 18px rgba(255, 184, 77, 0.24);
-    }
-
-    .cta-row a.gold-pill:hover {
-      background: linear-gradient(135deg, var(--gold), var(--gold2));
-      color: #16110b;
-      filter: brightness(1.05);
-      transform: translateY(-1px);
-    }
-
-    .footer {
-      padding: 42px 0 72px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .footer-card {
-      padding: 20px 22px;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .buy {
-      color: #d9f7e7;
-    }
-
-    .sell {
-      color: #ffe1e1;
-    }
-
-    .ticker-shell {
-      overflow: hidden;
-      border-radius: 12px;
-    }
-
-    .ticker-frame {
-      display: block;
-      width: 100%;
-      height: 72px;
-      border: 0;
-      background: transparent;
-    }
-
-    @media (max-width: 980px) {
-
-      .hero-grid,
-      .grid-2,
-      .result-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .topbar-inner {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 10px 0;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .wrap {
-        width: min(calc(100% - 20px), var(--max));
-      }
-
-      .card,
-      .panel {
-        padding: 20px;
-      }
-
-      .nav,
-      .cta-row {
-        display: grid;
-        grid-template-columns: 1fr;
-        width: 100%;
-      }
-
-      .nav a {
-        width: 100%;
-      }
-
-      .stat,
-      .result-line {
-        grid-template-columns: 1fr;
-        gap: 6px;
-      }
-
-      .stat-value,
-      .result-line span {
-        text-align: left;
-      }
-    }
-  </style>
 </head>
 
 <body>
@@ -578,10 +55,11 @@
         <a href="https://trade.cosigo.io/pool.html">pool</a>
         <a href="https://trade.cosigo.io/guides.html">guides</a>
         <a class="cigo-market-pill" href="https://market.cosigo.io/" title="CIGO market notice">
-    <img src="/shared/assets/icons/cigo_256.png" alt="CIGO">
-    <span>market</span>
-  </a>
-  <a href="https://bscscan.com/token/0x3a38e963f524E0dDFB75dFa1752b4Cd1364F5560" target="_blank" rel="noopener">token</a>
+          <img src="/shared/assets/icons/cigo_256.png" alt="CIGO">
+          <span>market</span>
+        </a>
+        <a href="https://bscscan.com/token/0x3a38e963f524E0dDFB75dFa1752b4Cd1364F5560" target="_blank"
+          rel="noopener">token</a>
         <a href="https://snakepit.cosigo.io/security_notice.html#summary">security notes</a>
       </nav>
     </div>
@@ -601,20 +79,24 @@
           </p>
 
 
-            <div class="notice warning">
-              <strong>Live swap price warning:</strong>
-              This calculator uses a published linear quote-depth model. It is not PancakeSwap reserve math and should not be expected to match PancakeSwap within a few basis points.
-              PancakeSwap uses live AMM reserves, pool fees, token tax, slippage, and current pool movement.
-              For live execution estimates, use <a href="https://trade.cosigo.io/" target="_blank" rel="noopener"><strong>trade.cosigo.io ↗</strong></a>.
-            </div>
+          <div class="notice warning">
+            <strong>Live swap price warning:</strong>
+            This calculator uses a published linear quote-depth model. It is not PancakeSwap reserve math and should not
+            be expected to match PancakeSwap within a few basis points.
+            PancakeSwap uses live AMM reserves, pool fees, token tax, slippage, and current pool movement.
+            For live execution estimates, use <a href="https://trade.cosigo.io/" target="_blank"
+              rel="noopener"><strong>trade.cosigo.io ↗</strong></a>.
+          </div>
 
-            <div class="notice warning">
-              <strong>Important:</strong>
-              This page is an indicative CIGO quote-depth estimate, not a guaranteed PancakeSwap execution quote. The reference basis may differ from the live PancakeSwap pool price.
-              Live pool swaps use actual PancakeSwap reserve math, pool fees, CIGO contract tax, gas, and slippage.
-              For live execution, use <a href="https://trade.cosigo.io/" target="_blank" rel="noopener"><strong>trade.cosigo.io ↗</strong></a>
-              and review the Rabby confirmation before signing.
-            </div>
+          <div class="notice warning">
+            <strong>Important:</strong>
+            This page is an indicative CIGO quote-depth estimate, not a guaranteed PancakeSwap execution quote. The
+            reference basis may differ from the live PancakeSwap pool price.
+            Live pool swaps use actual PancakeSwap reserve math, pool fees, CIGO contract tax, gas, and slippage.
+            For live execution, use <a href="https://trade.cosigo.io/" target="_blank"
+              rel="noopener"><strong>trade.cosigo.io ↗</strong></a>
+            and review the Rabby confirmation before signing.
+          </div>
 
 
           <div class="notice">
@@ -729,7 +211,8 @@
           </div>
 
           <div class="stat-note" id="poolDisplayNote">
-            Direct on-chain read of the active CIGO PancakeSwap V2 pools. PancakeSwap frontend display may lag, filter, or fail independently.
+            Direct on-chain read of the active CIGO PancakeSwap V2 pools. PancakeSwap frontend display may lag, filter,
+            or fail independently.
           </div>
         </div>
 
@@ -737,8 +220,10 @@
           <a class="gold-pill" href="https://trade.cosigo.io/">live swap</a>
           <a href="https://trade.cosigo.io/request.html">request desk</a>
           <a href="https://trade.cosigo.io/pool.html">liquidity pool</a>
-          <a href="https://bscscan.com/address/0xDed1e63B6262C0328876b7774f65c08505dd559A" target="_blank" rel="noopener">CIGO / BSC-USD pool</a>
-          <a href="https://bscscan.com/address/0x88DAB085d2b4dc31f8Cf990896d9042EE47C3e19" target="_blank" rel="noopener">CIGO / WBNB pool</a>
+          <a href="https://bscscan.com/address/0xDed1e63B6262C0328876b7774f65c08505dd559A" target="_blank"
+            rel="noopener">CIGO / BSC-USD pool</a>
+          <a href="https://bscscan.com/address/0x88DAB085d2b4dc31f8Cf990896d9042EE47C3e19" target="_blank"
+            rel="noopener">CIGO / WBNB pool</a>
           <a href="https://token.cosigo.io/">official COSIGO&trade;</a>
         </div>
       </div>
@@ -837,7 +322,8 @@ impact%  = size effect relative to quoted basis
             <p>
               Opaque price claims ask the user to trust a result without seeing the rule.
               This page does the opposite. It shows the basis, the adjustment, the entered size,
-              the resulting indicative quote estimate, and the quote-depth adjustment. The reference basis is a published quote basis, not the live PancakeSwap pool price.
+              the resulting indicative quote estimate, and the quote-depth adjustment. The reference basis is a
+              published quote basis, not the live PancakeSwap pool price.
             </p>
           </div>
 
@@ -881,37 +367,37 @@ impact%  = size effect relative to quoted basis
 
   </main>
 
-    <section class="section wrap" id="important-notice-bottom">
-      <h2>important notice for users, reviewers, and labelers</h2>
-      <div class="notice">
-    <div class="hero-card">
-      <strong>Important notice for users, reviewers, and labelers:</strong>
-      CIGO is more accurately described as a protected, intelligently controlled token with strong
-      administrative and market-defense features, not by the prejudicial “malicious” label applied in
-      MetaMask-related warning flows. CIGO was designed as a speculative market-access token with
-      protective mechanisms intended to limit bot pressure, whale concentration, and liquidity abuse
-      during fragile stages of market formation. Those features may raise centralization concerns and
-      deserve open review, but that is not the same as a malicious designation or the impairment of
-      normal wallet operability. No specific abusive function or actual misconduct by CIGO was identified
-      to COSIGO by the two representatives involved. Both declined to remove or correct the designation
-      and appeared to treat CIGO as though it were a scam token, despite the absence of any clearly stated
-      finding of fraud or exploit. Centralized scanners and labeling systems currently operate with broad
-      discretion and limited accountability. Holders who acquired CIGO did so with notice that it is a
-      controlled-risk token structure with explicit protections and restrictions. CIGO is not a naked meme 
-      or hype token. Its design is controlled and deliberate, and in that respect is closer to administratively 
-      managed tokens such as USDT than to an unmanaged meme asset. Secure is a fair description; scam is not. 
-      Relevant notices and disclosures are stated throughout the COSIGO website. In light of third-party 
-      restrictions, opaque warning systems, and inconsistent wallet behavior, holders have been advised to 
-      approach CIGO trades carefully, review all warnings, and make informed decisions while adverse labels 
-      remain in place. COSIGO currently regards Rabby wallet as a more transparent and functional option. 
-      For further details, see
-      <a href="https://labels.cosigo.io/" target="_blank" rel="noopener"><strong>labels.cosigo.io ↗</strong></a>.
+  <section class="section wrap" id="important-notice-bottom">
+    <h2>important notice for users, reviewers, and labelers</h2>
+    <div class="notice">
+      <div class="hero-card">
+        <strong>Important notice for users, reviewers, and labelers:</strong>
+        CIGO is more accurately described as a protected, intelligently controlled token with strong
+        administrative and market-defense features, not by the prejudicial “malicious” label applied in
+        MetaMask-related warning flows. CIGO was designed as a speculative market-access token with
+        protective mechanisms intended to limit bot pressure, whale concentration, and liquidity abuse
+        during fragile stages of market formation. Those features may raise centralization concerns and
+        deserve open review, but that is not the same as a malicious designation or the impairment of
+        normal wallet operability. No specific abusive function or actual misconduct by CIGO was identified
+        to COSIGO by the two representatives involved. Both declined to remove or correct the designation
+        and appeared to treat CIGO as though it were a scam token, despite the absence of any clearly stated
+        finding of fraud or exploit. Centralized scanners and labeling systems currently operate with broad
+        discretion and limited accountability. Holders who acquired CIGO did so with notice that it is a
+        controlled-risk token structure with explicit protections and restrictions. CIGO is not a naked meme
+        or hype token. Its design is controlled and deliberate, and in that respect is closer to administratively
+        managed tokens such as USDT than to an unmanaged meme asset. Secure is a fair description; scam is not.
+        Relevant notices and disclosures are stated throughout the COSIGO website. In light of third-party
+        restrictions, opaque warning systems, and inconsistent wallet behavior, holders have been advised to
+        approach CIGO trades carefully, review all warnings, and make informed decisions while adverse labels
+        remain in place. COSIGO currently regards Rabby wallet as a more transparent and functional option.
+        For further details, see
+        <a href="https://labels.cosigo.io/" target="_blank" rel="noopener"><strong>labels.cosigo.io ↗</strong></a>.
+      </div>
     </div>
-  </div>
-</div>
+    </div>
 
 
-    </section>
+  </section>
 
   <footer class="footer wrap">
     <div class="footer-card">
