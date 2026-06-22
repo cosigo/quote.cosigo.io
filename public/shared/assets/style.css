@@ -121,10 +121,13 @@ a {
 }
 
 .hero-grid {
-    display: grid;
-    grid-template-columns: 1.15fr .85fr;
-    gap: 22px;
-    align-items: stretch;
+    grid-template-columns: minmax(280px, 0.82fr) minmax(520px, 1.18fr);
+    align-items: start;
+}
+
+.hero-grid>.card,
+.hero-grid>#calculator {
+    min-width: 0;
 }
 
 .card,
@@ -492,6 +495,10 @@ button:hover {
     .card,
     .panel {
         padding: 20px;
+    }
+
+    .hero-grid {
+        grid-template-columns: 1fr;
     }
 
     .nav,
