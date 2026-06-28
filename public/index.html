@@ -7,7 +7,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>quote.cosigo.io — transparent CIGO pricing</title>
   <link rel="stylesheet" href="/shared/assets/trade.css?v=20260614-054012">
-  <link rel="stylesheet" href="/shared/assets/style.css?v=20260621-1945">
+  <link rel="stylesheet" href="/shared/assets/style.css?v=20260628-css-footer-streamline">
+  <link rel="stylesheet" href="/shared/cigo-footer.css?v=20260628-market-footer">
   <meta name="description"
     content="Indicative CIGO quote-depth engine with public basis, visible formula, buy and sell estimates, quote-depth adjustment, and user-verifiable math." />
   <meta name="author" content="COSIGO">
@@ -251,7 +252,7 @@ impact%  = size effect relative to quoted basis
             </code>
           </div>
 
-          <div class="note-box" style="margin-top:18px;">
+          <div class="note-box note-box-spaced">
             <h3>why this is stronger</h3>
             <p>
               Opaque price claims ask the user to trust a result without seeing the rule.
@@ -261,7 +262,7 @@ impact%  = size effect relative to quoted basis
             </p>
           </div>
 
-          <div class="note-box" style="margin-top:18px;">
+          <div class="note-box note-box-spaced">
             <h3>wallet price visibility</h3>
             <p>
               Wallet apps may display zero when third-party data providers have not recognized a market price.
@@ -273,7 +274,6 @@ impact%  = size effect relative to quoted basis
         </aside>
       </div>
     </section>
-
 
 
     <section class="section wrap" id="live-pool-status">
@@ -325,9 +325,8 @@ impact%  = size effect relative to quoted basis
     </section>
 
 
-
-    <section class="section wrap" aria-labelledby="spot-ref-title" style="padding-top:0;">
-      <div class="card" style="margin-top:14px;">
+    <section class="section wrap section-tight-top" aria-labelledby="spot-ref-title">
+      <div class="card spot-ref-card">
         <div class="hd">
           <div class="title" id="spot-ref-title">Live silver and currency reference</div>
           <div class="hint">
@@ -336,13 +335,13 @@ impact%  = size effect relative to quoted basis
           </div>
         </div>
 
-        <div class="ticker-shell" style="margin-top:16px;">
+        <div class="ticker-shell ticker-shell-spaced">
           <iframe src="/assets/silver-ticker.html" loading="lazy" title="Live silver and currency ticker"
             class="ticker-frame">
           </iframe>
         </div>
 
-        <div style="padding-top:12px;">
+        <div class="spot-note-pad">
           <p class="value-live-note">
             Market quotation is shown above. CIGO trade size is calculated above.
           </p>
@@ -350,48 +349,48 @@ impact%  = size effect relative to quoted basis
       </div>
     </section>
 
-  </main>
 
-  <section class="section wrap" id="important-notice-bottom">
-    <h2>important notice for users, reviewers, and labelers</h2>
+<section class="section wrap" id="reviewer-wallet-note">
+    <h2>reviewer and wallet note</h2>
     <div class="notice">
-      <div class="hero-card">
-        <strong>Important notice for users, reviewers, and labelers:</strong>
-        CIGO is more accurately described as a protected, intelligently controlled token with strong
-        administrative and market-defense features, not by the prejudicial “malicious” label applied in
-        MetaMask-related warning flows. CIGO was designed as a speculative market-access token with
-        protective mechanisms intended to limit bot pressure, whale concentration, and liquidity abuse
-        during fragile stages of market formation. Those features may raise centralization concerns and
-        deserve open review, but that is not the same as a malicious designation or the impairment of
-        normal wallet operability. No specific abusive function or actual misconduct by CIGO was identified
-        to COSIGO by the two representatives involved. Both declined to remove or correct the designation
-        and appeared to treat CIGO as though it were a scam token, despite the absence of any clearly stated
-        finding of fraud or exploit. Centralized scanners and labeling systems currently operate with broad
-        discretion and limited accountability. Holders who acquired CIGO did so with notice that it is a
-        controlled-risk token structure with explicit protections and restrictions. CIGO is not a naked meme
-        or hype token. Its design is controlled and deliberate, and in that respect is closer to administratively
-        managed tokens such as USDT than to an unmanaged meme asset. Secure is a fair description; scam is not.
-        Relevant notices and disclosures are stated throughout the COSIGO website. In light of third-party
-        restrictions, opaque warning systems, and inconsistent wallet behavior, holders have been advised to
-        approach CIGO trades carefully, review all warnings, and make informed decisions while adverse labels
-        remain in place. COSIGO currently regards Rabby wallet as a more transparent and functional option.
-        For further details, see
+      <p>
+        <strong>CIGO is a controlled-risk market-access token.</strong>
+        This page publishes the quote basis, quote-depth cap, live pool references, and adjustment rule so users
+        can compare COSIGO/CIGO public quote logic against wallet or swap-interface output.
+      </p>
+      <p>
+        Wallet labels, routing displays, and third-party warnings may be delayed, incomplete, or inconsistent.
+        Users should review the public basis, active pool status, and current disclosures before trading.
+        Related label and wallet notes are maintained at
         <a href="https://labels.cosigo.io/" target="_blank" rel="noopener"><strong>labels.cosigo.io ↗</strong></a>.
-      </div>
+      </p>
     </div>
-    </div>
-
-
   </section>
 
-  <footer class="footer wrap">
-    <div class="footer-card">
-      <strong>Phase note:</strong> this is the first transparent pricing page for the COSIGO / CIGO system.
-      It is designed to teach the user how visible quote logic is stronger than unexplained price claims.
+  </main>
+
+
+<footer class="cigo-system-footer">
+    <div class="cigo-footer-inner">
+      <div class="cigo-footer-info">
+        <strong>CIGO market-access pages are published by the COSIGO&trade; system.</strong><br>
+        CIGO is a separate speculative market-access token for trading, liquidity, and public market activity.
+        It is not the COSIGO&trade; silver-referenced Ethereum token, is not silver-backed, and is not a claim on
+        COSIGO reserves or redemption inventory.<br>
+        COSIGO&trade; is a trademark claimed by Wendall Gregory Wilson. U.S. trademark application pending.
+      </div>
+
+      <div class="cigo-footer-links">
+        <a href="https://trade.cosigo.io/appendix.html">site appendix / quick reference</a>
+        <a href="https://cosigo.io/">COSIGO official</a>
+        <a href="https://labels.cosigo.io/">public label record</a>
+        <a href="https://snakepit.cosigo.io/security_notice.html#summary">security notes</a>
+        <a href="https://github.com/cosigo" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
     </div>
   </footer>
 
-  <script>
+<script>
     const LOCAL_QUOTE_POLICY = {
       inventoryCigo: 300000,
       depthFactor: 0.25,
@@ -716,10 +715,6 @@ impact%  = size effect relative to quoted basis
 
     initQuotePage();
   </script>
-
-  <footer class="site-appendix-footer">
-    <a href="https://trade.cosigo.io/appendix.html">site appendix / quick reference</a>
-  </footer>
 
 </body>
 
