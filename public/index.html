@@ -136,11 +136,11 @@
                 <span id="outImpact">0.60%</span>
               </div>
               <div class="result-line">
-                <strong>ballpark execution costs</strong>
+                <strong>manual fee assumptions</strong>
                 <span id="outFeeAssumption">CIGO tax + Pancake fee</span>
               </div>
               <div class="result-line">
-                <strong id="outFeeAdjustedLabel">ballpark fee-adjusted estimate</strong>
+                <strong id="outFeeAdjustedLabel">manual fee-adjusted request estimate</strong>
                 <span id="outFeeAdjusted">$0.00</span>
               </div>
             </div>
@@ -356,7 +356,7 @@ impact%  = size effect relative to quoted basis
       <p>
         <strong>CIGO is a controlled-risk market-access token.</strong>
         This page publishes the quote basis, quote-depth cap, live pool references, and adjustment rule so users
-        can compare COSIGO/CIGO public quote logic against wallet or swap-interface output.
+        can compare COSIGO/CIGO public quote logic against wallet or swap-interface output without presenting the manual quote as an executable swap quote.
       </p>
       <p>
         Wallet labels, routing displays, and third-party warnings may be delayed, incomplete, or inconsistent.
@@ -652,7 +652,7 @@ impact%  = size effect relative to quoted basis
       if (quote.side === 'buy') {
         return {
           totalBps,
-          label: 'ballpark live buy cost',
+          label: 'manual fee-adjusted buy estimate',
           value: quote.totalUsd * (1 + feeRate),
           text: `CIGO buy tax ${(CIGO_BUY_TAX_BPS / 100).toFixed(2)}% + Pancake V2 fee ${(PANCAKE_V2_FEE_BPS / 100).toFixed(2)}% = ${(totalBps / 100).toFixed(2)}%`
         };
@@ -660,7 +660,7 @@ impact%  = size effect relative to quoted basis
 
       return {
         totalBps,
-        label: 'ballpark live sell proceeds',
+        label: 'manual fee-adjusted sell estimate',
         value: quote.totalUsd * (1 - feeRate),
         text: `CIGO sell tax ${(CIGO_SELL_TAX_BPS / 100).toFixed(2)}% + Pancake V2 fee ${(PANCAKE_V2_FEE_BPS / 100).toFixed(2)}% = ${(totalBps / 100).toFixed(2)}%`
       };
@@ -694,8 +694,8 @@ impact%  = size effect relative to quoted basis
 
         document.getElementById('explainText').textContent =
           side === 'buy'
-            ? 'This buy estimate starts from the published public buy basis, then adjusts openly for entered size relative to quote-depth inventory. The ballpark fee-adjusted line adds estimated CIGO buy tax and Pancake V2 fee for comparison with live execution.'
-            : 'This sell estimate starts from the published public sell basis, then adjusts openly for entered size relative to quote-depth inventory. The ballpark fee-adjusted line subtracts estimated CIGO sell tax and Pancake V2 fee for comparison with live execution.';
+            ? 'This buy estimate starts from the published public buy basis, then adjusts openly for entered size relative to quote-depth inventory. This is a manual request-desk estimate, not a live PancakeSwap/router quote. For executable swap output, compare against trade.cosigo.io, PancakeSwap, or Rabby.'
+            : 'This sell estimate starts from the published public sell basis, then adjusts openly for entered size relative to quote-depth inventory. This is a manual request-desk estimate, not a live PancakeSwap/router quote. For executable swap output, compare against trade.cosigo.io, PancakeSwap, or Rabby.';
       } catch (err) {
         document.getElementById('explainText').textContent =
           err.message || 'Invalid quote input.';
