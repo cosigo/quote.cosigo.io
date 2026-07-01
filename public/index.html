@@ -90,7 +90,7 @@
         </div>
 
         <article class="panel" id="calculator">
-          <h2>size-adjusted quote calculator</h2>
+          <h2>reference model calculator</h2>
           <div class="calc">
             <div class="row">
               <label for="tradeSize">trade size (CIGO)</label>
@@ -105,12 +105,12 @@
               </select>
             </div>
 
-            <button type="button" id="calcBtn">calculate quote estimate</button>
+            <button type="button" id="calcBtn">calculate reference model</button>
           </div>
 
           <div class="result-grid">
             <div class="result-box">
-              <h3 class="buy">quote estimate result</h3>
+              <h3 class="buy">reference model result</h3>
               <div class="result-line">
                 <strong>entered size</strong>
                 <span id="outSize">5,000 CIGO</span>
@@ -136,11 +136,11 @@
                 <span id="outImpact">0.60%</span>
               </div>
               <div class="result-line">
-                <strong>manual fee assumptions</strong>
+                <strong>reference fee assumptions</strong>
                 <span id="outFeeAssumption">CIGO tax + Pancake fee</span>
               </div>
               <div class="result-line">
-                <strong id="outFeeAdjustedLabel">manual fee-adjusted request estimate</strong>
+                <strong id="outFeeAdjustedLabel">reference-only manual estimate</strong>
                 <span id="outFeeAdjusted">$0.00</span>
               </div>
             </div>
@@ -287,12 +287,12 @@ impact%  = size effect relative to quoted basis
           </div>
 
           <div class="stat">
-            <div class="stat-label">CIGO / WBNB pool</div>
+            <div class="stat-label">historical CIGO / WBNB pool</div>
             <div class="stat-value" id="cigoWbnbPool">loading...</div>
           </div>
 
           <div class="stat">
-            <div class="stat-label">total active CIGO pool liquidity</div>
+            <div class="stat-label">active CIGO / BSC-USD liquidity</div>
             <div class="stat-value" id="cigoPoolTotal">loading...</div>
           </div>
 
@@ -307,7 +307,7 @@ impact%  = size effect relative to quoted basis
           </div>
 
           <div class="stat-note" id="poolDisplayNote">
-            Direct on-chain read of the active CIGO PancakeSwap V2 pools. PancakeSwap frontend display may lag, filter,
+            Direct on-chain read of the active CIGO / BSC-USD PancakeSwap V2 pool. PancakeSwap frontend display may lag, filter,
             or fail independently.
           </div>
         </div>
@@ -608,7 +608,7 @@ impact%  = size effect relative to quoted basis
 
       const cigoUsdtPool = Number(CIGO_POOL.cigoUsdtPoolBalance || 0);
       const cigoWbnbPool = Number(CIGO_POOL.cigoWbnbPoolBalance || 0);
-      const cigoPoolTotal = Number(CIGO_POOL.poolLiquidityCigo || (cigoUsdtPool + cigoWbnbPool));
+      const cigoPoolTotal = Number(CIGO_POOL.poolLiquidityCigo || cigoUsdtPool);
 
       const cigoUsdtPoolEl = document.getElementById('cigoUsdtPool');
       const cigoWbnbPoolEl = document.getElementById('cigoWbnbPool');
@@ -641,7 +641,7 @@ impact%  = size effect relative to quoted basis
       }
 
       document.getElementById('supplyNote').textContent =
-        `${formatCigo(availableFulfillment)} currently live in active PancakeSwap CIGO pools: ${formatCigo(CIGO_POOL.cigoUsdtPoolBalance || 0)} in CIGO / BSC-USD and ${formatCigo(CIGO_POOL.cigoWbnbPoolBalance || 0)} in CIGO / WBNB. ${formatCigo(committedReserve)} currently committed across treasury and custodian wallets. This section uses direct live pool data rather than PancakeSwap frontend search results or a manual owner-balance snapshot. Pool note: CIGO / WBNB is the original early PancakeSwap V2 pool. Liquidity was later shifted primarily to CIGO / BSC-USD, so the WBNB pool may show only a small residual balance. It remains listed to avoid confusion from older links, explorer records, or historical routing.`;
+        `${formatCigo(availableFulfillment)} currently live in the active PancakeSwap CIGO / BSC-USD pool. ${formatCigo(committedReserve)} currently committed across treasury and custodian wallets. This section uses direct live pool data rather than PancakeSwap frontend search results or a manual owner-balance snapshot. Historical note: the old CIGO / WBNB pool is no longer treated as active liquidity because WBNB routing was blacklisted/retired for CIGO operations. It remains listed only to avoid confusion from older links, explorer records, or historical routing.`;
     }
 
     function estimatedExecutionAdjustment(quote) {
@@ -652,7 +652,7 @@ impact%  = size effect relative to quoted basis
       if (quote.side === 'buy') {
         return {
           totalBps,
-          label: 'manual fee-adjusted buy estimate',
+          label: 'reference-only buy model',
           value: quote.totalUsd * (1 + feeRate),
           text: `CIGO buy tax ${(CIGO_BUY_TAX_BPS / 100).toFixed(2)}% + Pancake V2 fee ${(PANCAKE_V2_FEE_BPS / 100).toFixed(2)}% = ${(totalBps / 100).toFixed(2)}%`
         };
@@ -660,7 +660,7 @@ impact%  = size effect relative to quoted basis
 
       return {
         totalBps,
-        label: 'manual fee-adjusted sell estimate',
+        label: 'reference-only sell model',
         value: quote.totalUsd * (1 - feeRate),
         text: `CIGO sell tax ${(CIGO_SELL_TAX_BPS / 100).toFixed(2)}% + Pancake V2 fee ${(PANCAKE_V2_FEE_BPS / 100).toFixed(2)}% = ${(totalBps / 100).toFixed(2)}%`
       };
@@ -694,8 +694,8 @@ impact%  = size effect relative to quoted basis
 
         document.getElementById('explainText').textContent =
           side === 'buy'
-            ? 'This buy estimate starts from the published public buy basis, then adjusts openly for entered size relative to quote-depth inventory. This is a manual request-desk estimate, not a live PancakeSwap/router quote. For executable swap output, compare against trade.cosigo.io, PancakeSwap, or Rabby.'
-            : 'This sell estimate starts from the published public sell basis, then adjusts openly for entered size relative to quote-depth inventory. This is a manual request-desk estimate, not a live PancakeSwap/router quote. For executable swap output, compare against trade.cosigo.io, PancakeSwap, or Rabby.';
+            ? 'This buy estimate starts from the published public buy basis, then adjusts openly for entered size relative to quote-depth inventory. This is a reference model only, not an executable swap quote and not a guaranteed request-desk settlement quote. CIGO ↔ USDT request-desk quotes are anchored to live Pancake router estimates with a small manual desk premium. For actionable amounts, use request desk, trade.cosigo.io, PancakeSwap, or Rabby.'
+            : 'This sell estimate starts from the published public sell basis, then adjusts openly for entered size relative to quote-depth inventory. This is a reference model only, not an executable swap quote and not a guaranteed request-desk settlement quote. CIGO ↔ USDT request-desk quotes are anchored to live Pancake router estimates with a small manual desk premium. For actionable amounts, use request desk, trade.cosigo.io, PancakeSwap, or Rabby.';
       } catch (err) {
         document.getElementById('explainText').textContent =
           err.message || 'Invalid quote input.';
